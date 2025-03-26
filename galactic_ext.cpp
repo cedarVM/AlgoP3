@@ -3,83 +3,12 @@
 #include <vector>
 #include <queue>
 
-/*
- * Architecture Mar 24th
- *
- * Stuff we might expect from cachning:
- *
- * Tag, indexes and data oh my
- *
- * Consider:
- *  [ Tag ]  [ Validation ]  [ data ]
- *                           [cacheline 4bytes]
- *  Tag index word (2 bits)            | | | |
- *            \==================>   -[  MUX  ]
- *                      ^                 |
- *                      |                 V
- *                      |              [data]
- *  From [Tag][index][word]
- *        31   11..2  1 0
- *  Index is like column selection on cache line
- *
- */
-
-/*
- * Algorithms Mar 25th
- *
- * Single source shortest paths and relaxing behavior
- * Topological sort greatly reduces time to find single shortest path
- * Agnostic of starting node for topological sort,
- * the list of nodes generated will allow us to perform
- * a single walk through the SSSP algorithm and guarantee
- * that we have sufficiently relaxed all nodes
- *
- * - only works for Directed Acyclic Graphs
- * - reduces our runtime to O(V + E) instead of Bellman-Forde's O(EV)
- *
- * Remember: Toplogical Sort sorts end (closing times) for a node using DFS
- *
- */
-
-/*
- * Difference Constraints
- * Looks like Gaussian matrices
- *  Label each variable as node and each less-than inequality between variable
- *  be the weight of a directed edge (node2 -> node1 = var2 - var1)
- *  Create node var0 that points into all nodes with edges weighted 0.
- *
- * All-pairs shortest paths
- *  
- *
- */
-
-/*
-2 2 3 9
-2 4 5
-3 6 8 10
-1 7
-1 2
-1 11
-1 9
-1 1
-1 0
-1 3
-
-(or)
-
-2 2 3 3
-4 0 1 2 3
-4 4 5 6 7
-4 8 9 10 11
-*/
-
-
 using namespace std;
 
 union coord {
   struct {
   int xyz[3];
-  };
+};
   struct {
   int x; // n
   int y; // m
@@ -142,8 +71,17 @@ rep = this;
 }
 
 setUnit *set::operator+(setUnit *adjoin) {
-  // distinguish adjoin as set or member
-  // if set, add ranks together ; if member add 1 to rank and move on
+  set    *head =    (set *)adjoin; // can we use set members?
+  member *body = (member *)adjoin;
+
+  if (!adjoin) {
+  return this;
+  }
+
+  if (adjoin == adjoin->findRep()) {
+  rank += head->rank; // I don't think this is possible
+  }
+
   adjoin->setRep(this);
   return this;
 }
@@ -155,6 +93,8 @@ int dominion_count;
 union coord space;
 int *x, *y, *z;
 int galaxy_size = 1;
+
+set *handle;
 
 priority_queue<set *>adjacencies = priority_queue<set *>();
 
@@ -195,7 +135,9 @@ memset((void *)galaxy, 0, galaxy_size * sizeof(void *));
       monarchies[i][j]->xyz[axis]-=1;
 
         if (adjacencies.size() == 0) {
-        // make new set object and place into galaxy
+        handle = new set();
+        handle->makeset();
+        galaxy[*x][*y][*z] = (setUnit *)handle;
         } else {
         // make new member object
         // run through queue and union all in order, leaving the member object for last
