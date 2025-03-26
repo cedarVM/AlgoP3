@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include "prio.cpp"
 #include <vector>
 #include <queue>
 
@@ -8,7 +9,7 @@ using namespace std;
 union coord {
   struct {
   int xyz[3];
-};
+  };
   struct {
   int x; // n
   int y; // m
@@ -93,13 +94,15 @@ int dominion_count;
 union coord space;
 int *x, *y, *z;
 int galaxy_size = 1;
+int set_number = 0;
+int broken = 0;
 
 set *handle;
 
-priority_queue<set *>adjacencies = priority_queue<set *>();
+prio_queue<set>adjacencies = prio_queue<set>(new set(), 16);
 
 scanf("%d %d %d %d\n", &space.x, &space.y, &space.z, &monarch_count);
-vector<union coord *>monarchies[monarch_count]; 
+vector<union coord *>monarchies[monarch_count];
 setUnit *galaxy[space.x][space.y][space.z];
 
   for (int i = 0; i < 3; i++) {
@@ -126,29 +129,34 @@ memset((void *)galaxy, 0, galaxy_size * sizeof(void *));
       for (int axis = 0; axis < 3; axis++) {
       monarchies[i][j]->xyz[axis]-=1;
         if (monarchies[i][j]->xyz[axis] != -1) {
-        galaxy[*x][*y][*z] ? adjacencies.push((set *)galaxy[*x][*y][*z]->findRep()) : (void)0;
+        galaxy[*x][*y][*z] ? adjacencies.enqueue((set *)galaxy[*x][*y][*z]->findRep()) : (void)0;
         }
       monarchies[i][j]->xyz[axis]+=2;
         if (monarchies[i][j]->xyz[axis] < space.xyz[axis]) {
-        galaxy[*x][*y][*z] ? adjacencies.push((set *)galaxy[*x][*y][*z]->findRep()) : (void)0;
+        galaxy[*x][*y][*z] ? adjacencies.enqueue((set *)galaxy[*x][*y][*z]->findRep()) : (void)0;
         }
       monarchies[i][j]->xyz[axis]-=1;
-
-        if (adjacencies.size() == 0) {
-        handle = new set();
-        handle->makeset();
-        galaxy[*x][*y][*z] = (setUnit *)handle;
-        } else {
-        // make new member object
-        // run through queue and union all in order, leaving the member object for last
-        // also update rank of first off queue
-        }
-
       }
-    printf("done\n");
+
+      if (adjacencies.size() == 0) {
+      set_number++;
+      handle = new set();
+      handle->makeset();
+      galaxy[*x][*y][*z] = (setUnit *)handle;
+      } else {
+      set_number -= adjacencies.size() - 1;
+      handle = adjacencies.dequeue();
+        while (adjacencies.size()) {
+        handle = (set *)( *handle + (setUnit *)adjacencies.dequeue() );
+        }
+        handle = (set *)( *handle + galaxy[*x][*y][*z] );
+      }
     delete monarchies[i][j];
     }
+  printf("sets: %d\n", set_number);
+  broken += set_number > 1;
   }
+  printf("%d\n", broken);
 
 }
 
