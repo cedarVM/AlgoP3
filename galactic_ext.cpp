@@ -157,7 +157,6 @@ memset((void *)galaxy, 0, galaxy_size * sizeof(void *));
       }
     delete monarchies[i][j];
     }
-  printf("sets: %d\n", set_number);
   broken += set_number > 1;
   }
   printf("%d\n", broken);
