@@ -18,7 +18,8 @@ template<typename T>
 prio_queue<T>::prio_queue(T *sentinel, int capacity) {
   qsize = 0;
   this->capacity = capacity;
-  for (int i = 0; i < capacity; i++) {
+  arr = new T*[capacity + 1];
+  for (int i = 0; i < capacity + 1; i++) {
   arr[i] = sentinel;
   }
 }
@@ -33,6 +34,7 @@ T *prio_queue<T>::dequeue(void) {
   T *ret = arr[0];
 
   arr[0] = arr[qsize - 1];
+  arr[qsize - 1] = arr[capacity]; // null out with sentinel
 
   int child1 = 1;
   int child2 = 2;

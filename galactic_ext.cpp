@@ -57,6 +57,7 @@ class set : public setUnit { // actual set (is really just a representative)
 
 class member : public setUnit { // set members
   public:
+    member() { rep = 0; };
     member(setUnit *repr) { rep = repr; };
 };
 
@@ -81,6 +82,8 @@ setUnit *set::operator+(setUnit *adjoin) {
 
   if (adjoin == adjoin->findRep()) {
   rank += head->rank; // I don't think this is possible
+  } else {
+  rank++;
   }
 
   adjoin->setRep(this);
@@ -149,6 +152,7 @@ memset((void *)galaxy, 0, galaxy_size * sizeof(void *));
         while (adjacencies.size()) {
         handle = (set *)( *handle + (setUnit *)adjacencies.dequeue() );
         }
+        galaxy[*x][*y][*z] = new member(handle);
         handle = (set *)( *handle + galaxy[*x][*y][*z] );
       }
     delete monarchies[i][j];
